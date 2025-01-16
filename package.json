@@ -1,0 +1,22 @@
+{
+  "name": "com.michi-b.michis-vfx-utils",
+  "version": "0.0.0",
+  "displayName": "Michi's GameObject Hotbar",
+  "description": "A quick GameObject ping window for the Unity Editor, which works even after reloading scenes.",
+  "unity": "2020.3",
+  "documentationUrl": "https://https://github.com/michi-b/michis-gameobject-hotbar",
+  "changelogUrl": "https://https://github.com/michi-b/michis-gameobject-hotbar",
+  "licensesUrl": "https://opensource.org/license/mit",
+  "dependencies": {
+  },
+  "keywords": [
+    "hotbar",
+    "gameobject",
+    "ping"
+  ],
+  "author": {
+    "name": "Michael Brunner",
+    "email": "misbat.dev@gmail.com",
+    "url": "https://github.com/michi-b"
+  }
+}
