@@ -7,7 +7,7 @@ namespace Michis.GameObjectHotList.Editor
         [MenuItem("Window/Michi's/HotList")]
         public static void ShowWindow()
         {
-            GetWindow<HotList>("Hotbar");
+            GetWindow<HotList>("HotList");
         }
         
     }
