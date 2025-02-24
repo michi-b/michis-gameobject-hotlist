@@ -1,8 +1,8 @@
 {
-  "name": "com.michi-b.michis-vfx-utils",
+  "name": "com.michi-b.michis-gameobject-hotlist",
   "version": "0.0.0",
-  "displayName": "Michi's GameObject Hotbar",
-  "description": "A quick GameObject ping window for the Unity Editor, which works even after reloading scenes.",
+  "displayName": "Michi's GameObject Hotlist",
+  "description": "A quick GameObject ping and select window for the Unity Editor, which works even after reloading scenes.",
   "unity": "2020.3",
   "documentationUrl": "https://https://github.com/michi-b/michis-gameobject-hotbar",
   "changelogUrl": "https://https://github.com/michi-b/michis-gameobject-hotbar",
