@@ -73,7 +73,7 @@ namespace Michis.GameObjectHotlist.Editor.Utility
 
             GameObject root = scene.GetRootGameObjects().First(go => go.name == gameObjectHierarchyPath[0]);
 
-            if (root == null)
+            if (!root)
             {
                 throw new GameObjectInHierarchyPathNotFoundException(entry, 0);
             }

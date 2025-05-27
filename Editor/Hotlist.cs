@@ -1,27 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Michis.GameObjectHotlist.Editor.Exceptions;
-using Michis.GameObjectHotlist.Editor.Extensions;
 using Michis.GameObjectHotlist.Editor.Serialization;
 using UnityEditor;
-using UnityEditor.SceneManagement;
-using UnityEditor.SearchService;
-using UnityEditor.UIElements;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
-using Button = UnityEngine.UIElements.Button;
 using GameObjectUtility = Michis.GameObjectHotlist.Editor.Utility.GameObjectUtility;
-using Scene = UnityEngine.SceneManagement.Scene;
-using Toggle = UnityEngine.UIElements.Toggle;
 
 namespace Michis.GameObjectHotlist.Editor
 {
     public class Hotlist : EditorWindow
     {
         private SerializedHotlist _hotlist;
+        private ReorderableList _reorderableHotlist;
+
+        private bool _isInitialized = false;
+        private float _toggleWidth;
 
         [MenuItem("Window/Michi's/GameObject Hotlist")]
         public static void ShowWindow()
@@ -31,26 +22,16 @@ namespace Michis.GameObjectHotlist.Editor
 
         private static Hotlist GetWindow()
         {
-            return GetWindow<Hotlist>("GameObject Hotlist");
-        }
-
-        [MenuItem("GameObject/Wow")]
-        public static void Wow()
-        {
-            Debug.Log("Wow");
-        }
-
-        [MenuItem("GameObject/Wow", true)]
-        private static bool ValidateWow()
-        {
-            return false;
+            var window = GetWindow<Hotlist>("GameObject Hotlist");
+            window.Initialize();
+            return window;
         }
 
         [MenuItem("GameObject/Add to Hotlist %h", false, 1)]
         public static void AddToHotlist()
         {
             var gameObject = Selection.activeObject as GameObject;
-            Debug.Assert(gameObject != null);
+            Debug.Assert(gameObject);
             Hotlist window = GetWindow();
             window._hotlist.Add(new HotlistEntry(gameObject));
         }
@@ -59,17 +40,14 @@ namespace Michis.GameObjectHotlist.Editor
         private static bool ValidateAddToHotlist()
         {
             var gameObject = Selection.activeObject as GameObject;
-            return gameObject != null;
-        }
-
-        protected virtual void Awake()
-        {
-            _hotlist = SerializedHotlist.Load();
+            return gameObject;
         }
 
         protected void OnGUI()
         {
-            foreach (HotlistEntry hotlistEntry in _hotlist) Draw(hotlistEntry);
+            Initialize();
+
+            _reorderableHotlist.DoLayoutList();
 
             if (GUILayout.Button("Clear"))
             {
@@ -77,27 +55,71 @@ namespace Michis.GameObjectHotlist.Editor
             }
         }
 
-        private static void Draw(HotlistEntry hotlistEntry)
+        private void Initialize()
         {
-            bool canFindGameObject = GameObjectUtility.CanFindGameObject(hotlistEntry);
-
-            using var horizontalScope = new EditorGUILayout.HorizontalScope();
-
-            string label = hotlistEntry.GenerateFullPath();
-
-            if (canFindGameObject)
+            if (!_isInitialized)
             {
-                if (GUILayout.Button(label))
-                {
-                    Select(hotlistEntry);
-                }
+                _toggleWidth = GUI.skin.toggle.CalcSize(AutoLoadLabel).x;
+
+                _hotlist = SerializedHotlist.Load();
+
+                _isInitialized = true;
             }
-            else
+
+            _reorderableHotlist ??= new ReorderableList(_hotlist, typeof(HotlistEntry), true, false, false, true)
             {
-                Color guiColor = GUI.color;
-                GUI.color = Color.red;
-                EditorGUILayout.LabelField(label);
-                GUI.color = guiColor;
+                elementHeight = EditorGUIUtility.singleLineHeight,
+                drawElementCallback = Draw,
+                onRemoveCallback = list =>
+                {
+                    _hotlist.RemoveAt(list.index);
+                    _hotlist.Save();
+                }
+            };
+        }
+
+        private void Draw(Rect rect, int index, bool isActive, bool isFocused)
+        {
+            // GUILayout.BeginArea(rect);
+            try
+            {
+                HotlistEntry entry = _hotlist[index];
+
+                bool canFindGameObject = GameObjectUtility.CanFindGameObject(entry);
+
+                // using var horizontalScope = new EditorGUILayout.HorizontalScope();
+
+                string label = entry.GenerateFullPath();
+
+                if (canFindGameObject)
+                {
+                    if (GUI.Button(rect, label))
+                    {
+                        Select(entry);
+                    }
+                    // if (GUILayout.Button(label))
+                    // {
+                    //     Select(entry);
+                    // }
+                }
+                else
+                {
+                    Color guiColor = GUI.color;
+                    GUI.color = Color.red;
+                    EditorGUILayout.LabelField(label);
+                    GUI.color = guiColor;
+                }
+
+                // EditorGUI.BeginChangeCheck();
+                // entry.AutoLoad = GUILayout.Toggle(entry.AutoLoad, AutoLoadLabel, GUILayout.Width(_toggleWidth));
+                // if (EditorGUI.EndChangeCheck())
+                // {
+                //     _hotlist.Save();
+                // }
+            }
+            finally
+            {
+                // GUILayout.EndArea();
             }
         }
 
@@ -107,5 +129,7 @@ namespace Michis.GameObjectHotlist.Editor
             Selection.activeObject = target;
             EditorGUIUtility.PingObject(target);
         }
+
+        private static readonly GUIContent AutoLoadLabel = new GUIContent(string.Empty, "Auto load this GameObject on play mode scene load");
     }
 }
